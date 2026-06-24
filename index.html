@@ -59,7 +59,7 @@
                     <i class="fa-solid fa-unlock-keyhole"></i>
                 </div>
                 <h2 class="text-2xl font-black tracking-tight text-white">Zenith Fit Workspace</h2>
-                <p class="text-slate-400 text-xs mt-2">The layout style templates are ready. Tap below to unlock the dashboard diagnostics window.</p>
+                <p class="text-slate-400 text-xs mt-2">The design template configuration is fully loaded. Tap below to execute dashboard interface panels.</p>
             </div>
 
             <button id="unlockedLaunchBtn" class="w-full bg-green-500 hover:bg-green-600 text-slate-950 font-black py-4 rounded-xl shadow-lg shadow-green-500/10 transition text-sm uppercase tracking-wider flex items-center justify-center gap-2">
@@ -193,7 +193,7 @@
                         <div class="space-y-3">
                             <div class="bg-slate-950/60 border border-slate-900 rounded-xl p-3 flex gap-3 items-center">
                                 <div class="w-20 h-14 bg-slate-800 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=100&q=80" class="w-full h-full object-cover opacity-60">
+                                    <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=100&q=80" class="w-full h-full object-cover opacity-60" alt="HIIT Preview">
                                 </div>
                                 <div>
                                     <h4 class="text-xs font-bold text-white">20-Min HIIT Blast</h4>
@@ -202,7 +202,7 @@
                             </div>
                             <div class="bg-slate-950/60 border border-slate-900 rounded-xl p-3 flex gap-3 items-center">
                                 <div class="w-20 h-14 bg-slate-800 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=100&q=80" class="w-full h-full object-cover opacity-60">
+                                    <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=100&q=80" class="w-full h-full object-cover opacity-60" alt="Yoga Preview">
                                 </div>
                                 <div>
                                     <h4 class="text-xs font-bold text-white">Sunrise Power Yoga</h4>
@@ -211,7 +211,7 @@
                             </div>
                             <div class="bg-slate-950/60 border border-slate-900 rounded-xl p-3 flex gap-3 items-center">
                                 <div class="w-20 h-14 bg-slate-800 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1518611012118-696072aa579a?w=100&q=80" class="w-full h-full object-cover opacity-60">
+                                    <img src="https://images.unsplash.com/photo-1518611012118-696072aa579a?w=100&q=80" class="w-full h-full object-cover opacity-60" alt="Core Preview">
                                 </div>
                                 <div>
                                     <h4 class="text-xs font-bold text-white">Core & Mobility</h4>
@@ -251,4 +251,145 @@
 
         <div id="manualInputModalOverlay" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
             <div class="glass-panel w-full max-w-sm p-6 rounded-3xl border border-slate-800 shadow-2xl">
-                <h3 class="text-xs font-black text-white uppercase tracking-wide
+                <h3 class="text-xs font-black text-white uppercase tracking-widest mb-4">Manual Input</h3>
+                <form id="modalDataCaptureForm" class="space-y-4 text-xs">
+                    <select id="modalInputType" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white"><option value="Meal">Meal</option><option value="Workout">Workout</option></select>
+                    <input type="text" id="modalInputDesc" placeholder="Description..." required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                    <input type="number" id="modalInputValue" placeholder="Calories/Mins..." required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                    <div class="flex gap-2 pt-2">
+                        <button type="button" id="closeInputModalCardBtn" class="flex-1 bg-slate-800 text-slate-300 font-bold py-2 rounded-xl">Cancel</button>
+                        <button type="submit" class="flex-1 bg-green-500 text-slate-950 font-black py-2 rounded-xl">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let localCounters = { Calories: 0, Steps: 0, Water: 0, Streak: 0 };
+        let localTrendLogsArray = [];
+
+        const authPanel = document.getElementById('authPanel');
+        const zenithDashboardView = document.getElementById('zenithDashboardView');
+        const apiKeyConfigCard = document.getElementById('apiKeyConfigCard');
+        const userHeaderProfile = document.getElementById('userHeaderProfile');
+        
+        document.getElementById('unlockedLaunchBtn').addEventListener('click', function() {
+            authPanel.classList.add('hidden');
+            zenithDashboardView.classList.remove('hidden');
+            userHeaderProfile.classList.remove('hidden');
+            if(!localStorage.getItem('zenith_gemini_key')) { apiKeyConfigCard.classList.remove('hidden'); }
+            renderApplicationLogs();
+            updateVisualDisplayCounters();
+        });
+
+        window.triggerQuickIncrement = function(category, allocationStep) {
+            localCounters[category] += allocationStep;
+            updateVisualDisplayCounters();
+        };
+
+        function updateVisualDisplayCounters() {
+            document.getElementById('displayValCalories').textContent = `${localCounters.Calories} kcal`;
+            document.getElementById('displayValSteps').textContent = localCounters.Steps;
+            document.getElementById('displayValWater').textContent = `${localCounters.Water} L`;
+            document.getElementById('displayValStreak').textContent = `${localCounters.Streak} Days`;
+            document.getElementById('labelProgressSteps').textContent = `${localCounters.Steps} / 10,000`;
+            document.getElementById('barProgressSteps').style.width = `${Math.min((localCounters.Steps / 10000) * 100, 100)}%`;
+            document.getElementById('labelProgressCalories').textContent = `In: ${localCounters.Calories} / Out: 2500`;
+            document.getElementById('barProgressCalories').style.width = `${Math.min((localCounters.Calories / 2500) * 100, 100)}%`;
+        }
+
+        function appendDataHistoryRow(type, label, value, note = "Locally logged.") {
+            const d = new Date();
+            const dateStr = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
+            if(type === "Meal") triggerQuickIncrement("Calories", Number(value));
+            localTrendLogsArray.unshift({ date: dateStr, type: type, desc: label, val: type === "Meal" ? `${value} kcal` : `${value} mins`, note: note });
+            renderApplicationLogs();
+        }
+
+        function renderApplicationLogs() {
+            const tbody = document.getElementById('dashboardMetricsTableBody'); tbody.innerHTML = "";
+            localTrendLogsArray.forEach(item => {
+                const tr = document.createElement('tr'); tr.className = "border-b border-slate-900/40 hover:bg-slate-900/10 transition";
+                tr.innerHTML = `<td class="py-3 px-2 text-slate-400">${item.date}</td><td class="py-3 px-2"><span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${item.type === 'Meal' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-teal-500/10 text-teal-400'}">${item.type}</span></td><td class="py-3 px-2 text-white font-bold">${item.desc}</td><td class="py-3 px-2 text-slate-200">${item.val}</td><td class="py-3 px-2 text-slate-400 text-[11px] italic font-medium">${item.note}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('launchInputModalCardBtn').addEventListener('click', () => document.getElementById('manualInputModalOverlay').classList.remove('hidden'));
+        document.getElementById('closeInputModalCardBtn').addEventListener('click', () => document.getElementById('manualInputModalOverlay').classList.add('hidden'));
+        document.getElementById('modalDataCaptureForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            appendDataHistoryRow(document.getElementById('modalInputType').value, document.getElementById('modalInputDesc').value, document.getElementById('modalInputValue').value);
+            document.getElementById('manualInputModalOverlay').classList.add('hidden');
+        });
+
+        document.getElementById('actionBtnLogMeal').addEventListener('click', () => { document.getElementById('modalInputType').value = "Meal"; document.getElementById('manualInputModalOverlay').classList.remove('hidden'); });
+        document.getElementById('actionBtnAskQuestion').addEventListener('click', () => { document.getElementById('aiCoachTextPrompt').value = "Nutrition rules for high protein?"; document.getElementById('aiCoachTextPrompt').focus(); });
+
+        let geminiKey = localStorage.getItem('zenith_gemini_key') || "";
+        if(geminiKey) document.getElementById('geminiKeyInput').value = geminiKey;
+
+        document.getElementById('saveGeminiKeyBtn').addEventListener('click', () => {
+            const k = document.getElementById('geminiKeyInput').value.trim();
+            if(k.length > 5) { localStorage.setItem('zenith_gemini_key', k); geminiKey = k; document.getElementById('apiKeyConfigCard').classList.add('hidden'); }
+        });
+
+        document.getElementById('clearChatStreamBtn').addEventListener('click', () => { document.getElementById('aiChatStream').innerHTML = ""; });
+
+        document.getElementById('aiChatSubmitForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = document.getElementById('aiCoachTextPrompt');
+            const txt = input.value.trim(); if(!txt) return;
+            appendMessageBubble(txt, true); input.value = "";
+
+            if(!geminiKey) { return appendMessageBubble("Please activate your Gemini API key in the configuration panel above first.", false); }
+
+            const xhr = new XMLHttpRequest();
+            const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + geminiKey;
+            
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        if (data.error) {
+                            appendMessageBubble("⚠️ Engine Error: " + data.error.message, false);
+                            return;
+                        }
+                        if (data.candidates && data.candidates[0].content.parts[0].text) {
+                            let out = data.candidates[0].content.parts[0].text.trim();
+                            const match = out.match(/\[LOG:(Meal|Workout):([^:]+):(\d+)\]/i);
+                            if(match) {
+                                appendDataHistoryRow(match[1], match[2].trim(), match[3], `Kai Note: "Verified log update processed."`);
+                                out = out.replace(/\[LOG:[^\]]+\]/i, "").trim() + "\n\n⚡ Registered: " + match[2];
+                            }
+                            appendMessageBubble(out, false);
+                        } else {
+                            appendMessageBubble("Coach Kai: Connection successful, but format template returned an empty value.", false);
+                        }
+                    } catch(e) {
+                        appendMessageBubble("⚠️ Severe Parse Error: Response container failed to compile. Verify API Key activation status table.", false);
+                    }
+                }
+            };
+            
+            const payload = JSON.stringify({
+                contents: [{ parts: [{ text: "You are Coach Kai, a helpful fitness advisor. Respond directly to the user in 1 or 2 concise sentences. If they mention eating food or finishing a workout activity, you MUST calculate metrics and add a template tag format exactly like [LOG:Meal:Name:Calories] or [LOG:Workout:Name:Mins] at the absolute end. User statement: \"" + txt + "\"" }] }]
+            });
+            xhr.send(payload);
+        });
+
+        function appendMessageBubble(text, isUser) {
+            const div = document.createElement('div');
+            div.className = "p-3 rounded-2xl max-w-[85%] text-xs border " + (isUser ? 'bg-green-500 text-slate-950 font-bold border-green-400 rounded-tr-none ml-auto shadow-md' : 'bg-slate-900 text-slate-200 border-slate-800 rounded-tl-none mr-auto');
+            div.innerText = text;
+            const wrap = document.createElement('div'); wrap.className = "flex w-full mb-3"; wrap.appendChild(div);
+            const stream = document.getElementById('aiChatStream'); stream.appendChild(wrap); stream.scrollTop = stream.scrollHeight;
+        }
+    </script>
+</body>
+</html>
